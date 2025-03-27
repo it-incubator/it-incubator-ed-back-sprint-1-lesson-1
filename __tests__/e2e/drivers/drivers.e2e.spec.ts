@@ -1,80 +1,75 @@
 // @ts-ignore
-import request from "supertest";
+import request from 'supertest';
 // @ts-ignore
-import express from "express";
+import express from 'express';
 
-import { setupApp } from "../../../src/setup-app";
-import { DriverInputDto } from "../../../src/drivers/dto/driver.input-dto";
-import { HttpStatus } from "../../../src/core/types/http-statuses";
-import {
-  DriverStatus,
-  VehicleFeature,
-} from "../../../src/drivers/types/driver";
+import { setupApp } from '../../../src/setup-app';
+import { DriverInputDto } from '../../../src/drivers/dto/driver.input-dto';
+import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { DriverStatus, VehicleFeature } from '../../../src/drivers/types/driver';
 
-describe("Driver API", () => {
+describe('Driver API', () => {
   const app = express();
   setupApp(app);
 
   const testDriverData: DriverInputDto = {
-    name: "Valentin",
-    phoneNumber: "123-456-7890",
-    email: "valentin@example.com",
-    vehicleMake: "BMW",
-    vehicleModel: "X5",
+    name: 'Valentin',
+    phoneNumber: '123-456-7890',
+    email: 'valentin@example.com',
+    vehicleMake: 'BMW',
+    vehicleModel: 'X5',
     vehicleYear: 2021,
-    vehicleLicensePlate: "ABC-123",
+    vehicleLicensePlate: 'ABC-123',
     vehicleDescription: null,
     vehicleFeatures: [],
   };
 
   beforeAll(async () => {
-    await request(app).delete("/testing/all-data").expect(HttpStatus.NoContent);
+    await request(app).delete('/testing/all-data').expect(HttpStatus.NoContent);
   });
 
-  it("should create driver; POST drivers", async () => {
+  it('should create driver; POST drivers', async () => {
     const newDriver: DriverInputDto = {
-      name: "Feodor",
-      phoneNumber: "987-654-3210",
-      email: "feodor@example.com",
-      vehicleMake: "Audi",
-      vehicleModel: "A6",
+      name: 'Feodor',
+      phoneNumber: '987-654-3210',
+      email: 'feodor@example.com',
+      vehicleMake: 'Audi',
+      vehicleModel: 'A6',
       vehicleYear: 2020,
-      vehicleLicensePlate: "XYZ-456",
+      vehicleLicensePlate: 'XYZ-456',
       vehicleDescription: null,
       vehicleFeatures: [],
     };
 
     const createdDriverResponse = await request(app)
-      .post("/drivers")
+      .post('/drivers')
       .send(newDriver)
       .expect(HttpStatus.Created);
 
     expect(createdDriverResponse.body.status).toBe(DriverStatus.Online);
   });
 
-  it("should return drivers list; GET /drivers", async () => {
+  it('should return drivers list; GET /drivers', async () => {
     await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver' })
       .expect(HttpStatus.Created);
 
     await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver2" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver2' })
       .expect(HttpStatus.Created);
 
-    const driverListResponse = await request(app)
-      .get("/drivers")
-      .expect(HttpStatus.Ok);
+    const driverListResponse = await request(app).get('/drivers').expect(HttpStatus.Ok);
 
     expect(driverListResponse.body).toBeInstanceOf(Array);
     expect(driverListResponse.body.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("should return driver by id; GET /drivers/:id", async () => {
+  it('should return driver by id; GET /drivers/:id', async () => {
     const createResponse = await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver' })
       .expect(HttpStatus.Created);
 
     const getResponse = await request(app)
@@ -88,21 +83,21 @@ describe("Driver API", () => {
     });
   });
 
-  it("should update driver; PUT /drivers/:id", async () => {
+  it('should update driver; PUT /drivers/:id', async () => {
     const createResponse = await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver' })
       .expect(HttpStatus.Created);
 
     const driverUpdateData: DriverInputDto = {
-      name: "Updated Name",
-      phoneNumber: "999-888-7777",
-      email: "updated@example.com",
-      vehicleMake: "Tesla",
-      vehicleModel: "Model S",
+      name: 'Updated Name',
+      phoneNumber: '999-888-7777',
+      email: 'updated@example.com',
+      vehicleMake: 'Tesla',
+      vehicleModel: 'Model S',
       vehicleYear: 2022,
-      vehicleLicensePlate: "NEW-789",
-      vehicleDescription: "Updated vehicle description",
+      vehicleLicensePlate: 'NEW-789',
+      vehicleDescription: 'Updated vehicle description',
       vehicleFeatures: [VehicleFeature.ChildSeat],
     };
 
@@ -111,9 +106,7 @@ describe("Driver API", () => {
       .send(driverUpdateData)
       .expect(HttpStatus.NoContent);
 
-    const driverResponse = await request(app).get(
-      `/drivers/${createResponse.body.id}`,
-    );
+    const driverResponse = await request(app).get(`/drivers/${createResponse.body.id}`);
 
     expect(driverResponse.body).toEqual({
       ...driverUpdateData,
@@ -123,12 +116,12 @@ describe("Driver API", () => {
     });
   });
 
-  it("should update driver status; PUT /drivers/:id/status", async () => {
+  it('should update driver status; PUT /drivers/:id/status', async () => {
     const {
       body: { id: createdDriverId },
     } = await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver' })
       .expect(HttpStatus.Created);
 
     const statusUpdateData = {
@@ -140,28 +133,22 @@ describe("Driver API", () => {
       .send(statusUpdateData)
       .expect(HttpStatus.NoContent);
 
-    const driverResponse = await request(app).get(
-      `/drivers/${createdDriverId}`,
-    );
+    const driverResponse = await request(app).get(`/drivers/${createdDriverId}`);
 
     expect(driverResponse.body.status).toBe(DriverStatus.OnOrder);
   });
 
-  it("DELETE /drivers/:id and check after NOT FOUND", async () => {
+  it('DELETE /drivers/:id and check after NOT FOUND', async () => {
     const {
       body: { id: createdDriverId },
     } = await request(app)
-      .post("/drivers")
-      .send({ ...testDriverData, name: "Another Driver" })
+      .post('/drivers')
+      .send({ ...testDriverData, name: 'Another Driver' })
       .expect(HttpStatus.Created);
 
-    await request(app)
-      .delete(`/drivers/${createdDriverId}`)
-      .expect(HttpStatus.NoContent);
+    await request(app).delete(`/drivers/${createdDriverId}`).expect(HttpStatus.NoContent);
 
-    const driverResponse = await request(app).get(
-      `/drivers/${createdDriverId}`,
-    );
+    const driverResponse = await request(app).get(`/drivers/${createdDriverId}`);
     expect(driverResponse.status).toBe(HttpStatus.NotFound);
   });
 });
